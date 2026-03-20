@@ -4,8 +4,8 @@
 
 <div align="center">
 
-[![Build Status](https://github.com/Shreyash-Kale/Semantic-Search-RAG-Engine/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/ci.yml)
-[![Build Status](https://github.com/Shreyash-Kale/Semantic-Search-RAG-Engine/actions/workflows/cd.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/actions/workflows/cd.yml)
+[![Build Status](https://github.com/Shreyash-Kale/Semantic-Search-RAG-Engine/actions/workflows/ci.yml/badge.svg)](https://github.com/Shreyash-Kale/Semantic-Search-RAG-Engine/actions/workflows/ci.yml)
+[![Build Status](https://github.com/Shreyash-Kale/Semantic-Search-RAG-Engine/actions/workflows/cd.yml/badge.svg)](https://github.com/Shreyash-Kale/Semantic-Search-RAG-Engine/actions/workflows/cd.yml)
 ![Status](https://img.shields.io/badge/status-active-success.svg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python version](https://img.shields.io/badge/python-3.12.8-blue.svg)](https://www.python.org/downloads/)
