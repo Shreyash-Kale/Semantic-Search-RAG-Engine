@@ -106,8 +106,3 @@ Follow the [INSTRUCTIONS.md](INSTRUCTIONS.md) to set up your environment, instal
 | Gradio | Frontend UI | [Docs](https://gradio.app/get_started) |
 | Opik AI | LLM evaluation | [Docs](https://opik.ai/) |
 
----
-
-## 🪪 License
-
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
