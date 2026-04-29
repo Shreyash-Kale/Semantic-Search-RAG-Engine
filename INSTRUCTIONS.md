@@ -204,7 +204,7 @@ You do not need the following optional components to run the pipeline unless you
 Clone the repository, install dependencies, and set up your environment variables:
 
 ```bash
-git clone https://github.com/benitomartin/substack-newsletters-search-course.git
+git clone https://github.com/Shreyash-Kale/Semantic-Search-RAG-Engine.git
 cd substack-newsletters-search-course
 uv sync --all-groups
 source .venv/bin/activate
