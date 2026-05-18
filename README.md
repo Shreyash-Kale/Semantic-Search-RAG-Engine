@@ -1,4 +1,4 @@
-# Semantic Search Engine with RAG Pipeline
+# Semantic Search RAG Engine
 
 ![Diagram](static/app_diagram.png)
 
