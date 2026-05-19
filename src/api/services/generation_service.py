@@ -1,7 +1,5 @@
 from collections.abc import AsyncGenerator, Callable
 
-import opik
-
 from src.api.models.api_models import SearchResult
 from src.api.models.provider_models import MODEL_REGISTRY
 from src.api.services.providers.huggingface_service import generate_huggingface, stream_huggingface
@@ -17,7 +15,6 @@ logger = setup_logging()
 # -----------------------
 # Non-streaming answer generator
 # -----------------------
-@opik.track(name="generate_answer")
 async def generate_answer(
     query: str,
     contexts: list[SearchResult],
@@ -72,7 +69,6 @@ async def generate_answer(
 # -----------------------
 # Streaming answer generator
 # -----------------------
-@opik.track(name="get_streaming_function")
 def get_streaming_function(
     provider: str,
     query: str,

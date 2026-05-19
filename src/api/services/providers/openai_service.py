@@ -1,8 +1,6 @@
-import os
 from collections.abc import AsyncGenerator
 
 from openai import AsyncOpenAI
-from opik.integrations.openai import track_openai
 
 from src.api.models.provider_models import ModelConfig
 from src.api.services.providers.utils.messages import build_messages
@@ -16,15 +14,6 @@ logger = setup_logging()
 # -----------------------
 openai_key = settings.openai.api_key
 async_openai_client = AsyncOpenAI(api_key=openai_key)
-
-# -----------------------
-# Opik Observability
-# -----------------------
-
-os.environ["OPIK_API_KEY"] = settings.opik.api_key
-os.environ["OPIK_PROJECT_NAME"] = settings.opik.project_name
-
-async_openai_client = track_openai(async_openai_client)
 
 
 async def generate_openai(prompt: str, config: ModelConfig) -> tuple[str, None]:

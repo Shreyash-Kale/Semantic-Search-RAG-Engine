@@ -1,4 +1,3 @@
-import opik
 from fastapi import Request
 from qdrant_client.models import (
     FieldCondition,
@@ -17,7 +16,6 @@ from src.utils.logger_util import setup_logging
 logger = setup_logging()
 
 
-@opik.track(name="query_with_filters")
 async def query_with_filters(
     request: Request,
     query_text: str = "",
@@ -100,7 +98,6 @@ async def query_with_filters(
     return results
 
 
-@opik.track(name="query_unique_titles")
 async def query_unique_titles(
     request: Request,
     query_text: str,

@@ -1,5 +1,3 @@
-import opik
-
 from src.api.models.api_models import SearchResult
 from src.api.models.provider_models import ModelConfig
 
@@ -31,11 +29,6 @@ that is retrieved from a vector database without relying on outside knowledge or
 ### Final Answer:
 """
 
-
-# Create a new prompt
-prompt = opik.Prompt(
-    name="substack_research_assistant", prompt=PROMPT, metadata={"environment": "development"}
-)
 
 
 def build_research_prompt(

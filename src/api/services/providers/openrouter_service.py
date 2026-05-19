@@ -1,10 +1,7 @@
-import os
 from collections.abc import AsyncGenerator
 from typing import Any
 
-import opik
 from openai import AsyncOpenAI
-from opik.integrations.openai import track_openai
 
 from src.api.models.provider_models import ModelConfig
 from src.api.services.providers.utils.messages import build_messages
@@ -23,20 +20,10 @@ openrouter_url = settings.openrouter.api_url
 async_openrouter_client = AsyncOpenAI(base_url=openrouter_url, api_key=openrouter_key)
 
 # -----------------------
-# Opik Observability
-# -----------------------
-
-os.environ["OPIK_API_KEY"] = settings.opik.api_key
-os.environ["OPIK_PROJECT_NAME"] = settings.opik.project_name
-
-async_openrouter_client = track_openai(async_openrouter_client)
-
-# -----------------------
 # Helper to build extra body for OpenRouter
 # -----------------------
 
 
-@opik.track(name="build_openrouter_extra")
 def build_openrouter_extra(config: ModelConfig) -> dict[str, Any]:
     """Build the extra body for OpenRouter API requests based on the ModelConfig.
 
@@ -47,10 +34,7 @@ def build_openrouter_extra(config: ModelConfig) -> dict[str, Any]:
         dict[str, Any]: The extra body for OpenRouter API requests.
 
     """
-    body = {"provider": {"sort": config.provider_sort.value}}
-    if config.candidate_models:
-        body["models"] = list(config.candidate_models)  # type: ignore
-    return body
+    return {"provider": {"sort": config.provider_sort.value}}
 
 
 # -----------------------
@@ -58,7 +42,6 @@ def build_openrouter_extra(config: ModelConfig) -> dict[str, Any]:
 # -----------------------
 
 
-@opik.track(name="generate_openrouter")
 async def generate_openrouter(
     prompt: str,
     config: ModelConfig,
@@ -101,13 +84,12 @@ async def generate_openrouter(
     return answer, model_used, finish_reason
 
 
-@opik.track(name="stream_openrouter")
 def stream_openrouter(
     prompt: str,
     config: ModelConfig,
     selected_model: str | None = None,
 ) -> AsyncGenerator[str, None]:
-    """Stream a response from OpenRouter for a given prompt and model configuration.
+    """Stream a response from OpenRouter, falling back through candidate models on failure.
 
     Args:
         prompt (str): The input prompt.
@@ -120,52 +102,49 @@ def stream_openrouter(
     """
 
     async def gen() -> AsyncGenerator[str, None]:
-        """Generate response chunks from OpenRouter.
-
-        Yields:
-            AsyncGenerator[str, None]: Response chunks.
-
-        """
-
-        model_to_use = selected_model or config.primary_model
-
-        stream = await async_openrouter_client.chat.completions.create(
-            model=model_to_use,
-            messages=build_messages(prompt),
-            temperature=config.temperature,
-            max_completion_tokens=config.max_completion_tokens,
-            extra_body=build_openrouter_extra(config),
-            stream=True,
+        models_to_try: list[str] = (
+            [selected_model] if selected_model
+            else [config.primary_model] + list(config.candidate_models)
         )
-        try:
-            first_chunk = await stream.__anext__()
-            model_used = getattr(first_chunk, "model", None)
-            if model_used:
-                yield f"__model_used__:{model_used}"
-            delta_text = getattr(first_chunk.choices[0].delta, "content", None)
-            if delta_text:
-                yield delta_text
-        except StopAsyncIteration:
-            return
 
-        last_finish_reason = None
-        async for chunk in stream:
-            delta_text = getattr(chunk.choices[0].delta, "content", None)
-            if delta_text:
-                yield delta_text
+        for i, model_attempt in enumerate(models_to_try):
+            logger.info(f"Trying model {i + 1}/{len(models_to_try)}: {model_attempt}")
+            yield f"__model_status__:Trying {model_attempt}..."
 
-            # Reasons: tool_calls, stop, length, content_filter, error
-            finish_reason = getattr(chunk.choices[0], "finish_reason", None)
+            try:
+                stream = await async_openrouter_client.chat.completions.create(
+                    model=model_attempt,
+                    messages=build_messages(prompt),
+                    temperature=config.temperature,
+                    max_completion_tokens=config.max_completion_tokens,
+                    extra_body=build_openrouter_extra(config),
+                    stream=True,
+                )
 
-            if finish_reason:
-                last_finish_reason = finish_reason
+                yield f"__model_used__:{model_attempt}"
 
-        logger.info(f"OpenRouter stream finished. Model used: {model_used}")
-        logger.warning(f"Final finish_reason: {last_finish_reason}")
+                last_finish_reason = None
+                async for chunk in stream:
+                    delta_text = getattr(chunk.choices[0].delta, "content", None)
+                    if delta_text:
+                        yield delta_text
+                    finish_reason = getattr(chunk.choices[0], "finish_reason", None)
+                    if finish_reason:
+                        last_finish_reason = finish_reason
 
-        # Yield a chunk to trigger truncation warning in UI
-        if last_finish_reason == "length":
-            yield "__truncated__"
+                logger.info(f"Stream finished. Model: {model_attempt}, finish_reason: {last_finish_reason}")
+                if last_finish_reason == "length":
+                    yield "__truncated__"
+                return  # success — stop trying further models
+
+            except Exception as e:
+                logger.warning(f"Model {model_attempt} failed: {e}")
+                if i < len(models_to_try) - 1:
+                    logger.info(f"Falling back to next model...")
+                    continue
+                else:
+                    logger.error("All models exhausted.")
+                    yield "__error__"
 
     return gen()
 
