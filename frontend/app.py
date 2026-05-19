@@ -79,7 +79,9 @@ def call_ai(payload, streaming=True):
                 for chunk in r.iter_content(chunk_size=None, decode_unicode=True):
                     if not chunk:
                         continue
-                    if chunk.startswith("__model_used__:"):
+                    if chunk.startswith("__model_status__:"):
+                        yield "model_status", chunk.replace("__model_status__:", "").strip()
+                    elif chunk.startswith("__model_used__:"):
                         yield "model", chunk.replace("__model_used__:", "").strip()
                     elif chunk.startswith("__error__"):
                         yield "error", "Request failed. Please try again later."
@@ -227,8 +229,11 @@ def handle_ai_question_streaming(
         model_info = f"Provider: {provider}"
 
         for _, (event_type, content) in enumerate(call_ai(payload, streaming=True)):
-            if event_type == "text":
-                # Convert markdown to HTML
+            if event_type == "model_status":
+                model_info = f"Provider: {provider} | ⏳ {content}"
+                yield answer_html, model_info
+
+            elif event_type == "text":
                 html_content = markdown.markdown(content, extensions=["tables"])
                 answer_html = (
                     f"\n"
@@ -240,7 +245,7 @@ def handle_ai_question_streaming(
                 yield answer_html, model_info
 
             elif event_type == "model":
-                model_info = f"Provider: {provider} | Model: {content}"
+                model_info = f"Provider: {provider} | ✅ Model: {content}"
                 yield answer_html, model_info
 
             elif event_type == "truncated":
@@ -342,13 +347,13 @@ def update_model_choices(provider):
 # -----------------------
 # Gradio UI
 # -----------------------
-with gr.Blocks(title="Substack Articles LLM Engine", theme=gr.themes.Soft()) as demo:
+with gr.Blocks(title="Substack Articles LLM Search", theme=gr.themes.Soft()) as demo:
     # Header
     gr.HTML(
         "<div style='background-color:#ff6719; padding:20px; border-radius:12px; "
         "text-align:center; margin-bottom:20px;'>\n"
         "    <h1 style='color:white; font-size:42px; font-family:serif; margin:0;'>\n"
-        "        📰 Substack Articles LLM Engine\n"
+        "        📰 Substack Articles LLM Search\n"
         "    </h1>\n"
         "</div>\n"
     )

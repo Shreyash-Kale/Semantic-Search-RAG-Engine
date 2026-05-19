@@ -56,14 +56,10 @@ class ModelRegistry(BaseModel):
 MODEL_REGISTRY = ModelRegistry(
     models={
         "openrouter": ModelConfig(
-            primary_model="openai/gpt-oss-20b:free",
+            primary_model="mistralai/mistral-small-3.2-24b-instruct:free",
             candidate_models=[
-                # "meta-llama/llama-4-scout:free",
-                "cognitivecomputations/dolphin-mistral-24b-venice-edition:free",
-                # "meta-llama/llama-3.3-8b-instruct:free",
-                # "openai/gpt-oss-20b:free",
-                # "openai/gpt-oss-120b:free",
-                "nvidia/nemotron-nano-9b-v2:free",
+                "deepseek/deepseek-r1-0528-qwen3-8b:free",
+                "openai/gpt-oss-20b:free",
             ],
         ),
         # "openai": ModelConfig(primary_model="gpt-4o-mini"),
