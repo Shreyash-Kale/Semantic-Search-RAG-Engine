@@ -571,6 +571,3 @@ Additional checks can be added to the `.pre-commit-config.yaml` file. Current ad
 - `gitleaks` for detecting hardcoded secrets
 - `mdformat` for formatting markdown files
 
-## 📄 License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
